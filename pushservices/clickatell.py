@@ -37,8 +37,11 @@ try:
     from urllib import quote_plus
 except:
     from urllib.parse import quote_plus
+    
+import binascii
 
-ENDPOINT='http://api.clickatell.com/http/sendmsg?user=%s&password=%s&api_id=%s&to=%s&text=%s'
+#ENDPOINT='http://api.clickatell.com/http/sendmsg?user=%s&password=%s&api_id=%s&to=%s&text=%s'
+ENDPOINT='http://api.clickatell.com/http/sendmsg?user=%s&password=%s&api_id=%s&to=%s&text=%s&unicode=%d'
 
 class ClickatellClient(PushService):
     def __init__(self, masterdb, app, instanceid=0):
@@ -50,8 +53,15 @@ class ClickatellClient(PushService):
         pass
 
     def process(self, **kwargs):
+        ucode=0
         to = quote_plus(str(kwargs['token']))
-        alert = quote_plus(str(kwargs['alert']))
-        uri = ENDPOINT % (self.app['clickatellusername'], self.app['clickatellpassword'], self.app['clickatellappid'], to, alert)
+        alert = str(kwargs['alert'])
+        if len(alert.encode('utf-8')) != len(alert):
+            alert = binascii.hexlify(alert.encode('UTF-16BE'))
+            ucode=1
+        #alert = quote_plus(str(kwargs['alert']))
+        alert = quote_plus(alert)
+        #uri = ENDPOINT % (self.app['clickatellusername'], self.app['clickatellpassword'], self.app['clickatellappid'], to, alert)
+        uri = ENDPOINT % (self.app['clickatellusername'], self.app['clickatellpassword'], self.app['clickatellappid'], to, alert, ucode)
         http = AsyncHTTPClient()
         http.fetch(uri, self.handle_response, method="GET")
