@@ -55,7 +55,7 @@ class ClickatellClient(PushService):
     def process(self, **kwargs):
         ucode=0
         to = quote_plus(str(kwargs['token']))
-        alert = str(kwargs['alert'])
+        alert = unicode(kwargs['alert'])
         if len(alert.encode('utf-8')) != len(alert):
             alert = binascii.hexlify(alert.encode('UTF-16BE'))
             ucode=1
